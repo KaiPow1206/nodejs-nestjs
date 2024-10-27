@@ -1,6 +1,6 @@
 import { Exclude, Expose } from "class-transformer";
 
-export class VideoDto {
+export class VideoDto{
     @Expose()
     video_id: number;
     
@@ -25,8 +25,12 @@ export class VideoDto {
     @Exclude()
     type_id: number;
 
+    @Exclude()
+    videos_path: string;
+
+
     // tạo object mà tất cả các attribute đều là optional
-    constructor(partial: Partial<VideoDto>) {
+    constructor(partial: Partial<VideoDto>){
         Object.assign(this, partial);
     }
 }

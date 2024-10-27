@@ -8,16 +8,22 @@ import { plainToClass } from 'class-transformer';
 @Injectable()
 export class VideoService {
   prisma = new PrismaClient();
-
-  create(createVideoDto: CreateVideoDto) {
-    return 'This action adds a new video';
+  async create(createVideoDto: CreateVideoDto): Promise<VideoDto> {
+    try {
+      let newVideo = await this.prisma.video.create({
+        data: createVideoDto
+      })
+      return plainToClass(VideoDto, newVideo)
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  async findAll(page: number, size: number, keyword: string): Promise<VideoDto[]> {
+  async findAll(page: number,size: number,keyword:string):Promise<VideoDto[]> {
     try {
       let videos = await this.prisma.video.findMany({
-        where: keyword ? {
-          video_name: {
+        where:keyword ? {
+          video_name:{
             contains: keyword
           }
         }
@@ -25,9 +31,9 @@ export class VideoService {
         skip: (page - 1) * size,
         take: size
       });
-      return videos.map(video => plainToClass(VideoDto, video));
+      return videos.map(video =>plainToClass(VideoDto,video));
     } catch (error) {
-      throw new Error(error);
+      throw new Error(error)
     }
   }
 
