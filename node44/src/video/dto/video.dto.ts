@@ -1,7 +1,7 @@
 import { Exclude, Expose } from "class-transformer";
 
 export class VideoDto{
-    @Expose()
+    @Expose() // giấu đi
     video_id: number;
     
     @Expose()
@@ -19,7 +19,7 @@ export class VideoDto{
     @Expose()
     source: string;
     
-    @Exclude()
+    @Exclude() // để hiển thị ra
     user_id: number;
     
     @Exclude()

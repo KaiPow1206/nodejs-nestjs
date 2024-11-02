@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Header, Res, HttpStatus, Headers, Req, UseGuards} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Header, Res, HttpStatus, Headers, Req, UseGuards, UseInterceptors, UploadedFile, UploadedFiles} from '@nestjs/common';
 import { VideoService } from './video.service';
-import { CreateVideoDto } from './dto/create-video.dto';
+import { CreateVideoDto, FilesUpLoadDto, FileUpLoadDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import { VideoDto } from './dto/video.dto';
-import { ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { getStorageOptions } from 'src/shared/upload.service';
+import { CloudinaryUpLoadService } from 'src/shared/cloudUpload.service';
 @ApiTags('Video') // chia cụm api
 @Controller('video') //http://localhost:8080/video/
 export class VideoController {
-  constructor(private readonly videoService: VideoService) {}
+  constructor(
+    private readonly videoService: VideoService,
+    private readonly cloundUpLoadService: CloudinaryUpLoadService
+  ) {}
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
@@ -50,6 +56,57 @@ export class VideoController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: error.message});
     }
    
+  }
+
+  @Post('/upload-thumbnail')
+  // decorator cho swagger
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    type: FileUpLoadDto,
+    required:true
+  })
+  // decorator cho nest
+  @UseInterceptors(FileInterceptor('hinhAnh',{storage:getStorageOptions("videos")}))
+  uploadThumbnail(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response
+  ){
+    return res.status(HttpStatus.OK).json(file);
+  }
+
+  @Post('/upload-thumbnail-cloud')
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    type: FileUpLoadDto,
+    required:true
+  })
+  @UseInterceptors(FileInterceptor('hinhAnh'))
+  async upLoadThumbnailCloud(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response
+  ){
+    try {
+      const result = await this.cloundUpLoadService.upLoadImage(file,'videos')
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      console.log(error)
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"Upload failed"});
+    }
+  }
+
+  @Post('/upload-multi-thumbnails')
+  // decorator cho swagger
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    type: FilesUpLoadDto,
+    required:true
+  })
+  @UseInterceptors(FilesInterceptor('hinhAnh',20,{storage:getStorageOptions("videos")}))
+  upLoadMultipleThumbnail(
+    @UploadedFiles() files : Express.Multer.File[],
+    @Res() res: Response
+  ){
+    return res.status(HttpStatus.OK).json(files);
   }
 
   @Get(':id')

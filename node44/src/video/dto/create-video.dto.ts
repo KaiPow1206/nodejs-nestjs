@@ -28,3 +28,13 @@ export class CreateVideoDto {
     @IsEnum(VideoType)
     type_id: number;
 }
+
+export class FileUpLoadDto{
+    @ApiProperty({type: 'string',format:'binary'})
+    hinhAnh: any;
+}
+// define dto up nhiều hình
+export class FilesUpLoadDto{
+    @ApiProperty({type:'array',items:{type:'string',format:'binary'}})
+    hinhAnh:any[];  
+}
