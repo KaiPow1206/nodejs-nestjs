@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { KeyService } from 'src/key/key.service';
 
+// khóa đối xứng
 // @Injectable()
 // export class JwtStrategy extends PassportStrategy(Strategy) {
 //     constructor(config: ConfigService) {
@@ -35,10 +36,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         config: ConfigService,
         keyService: KeyService
     ) {
+        const publicKey = keyService.getPublicKey();
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: config.get('SECRET_KEY'),
+            secretOrKey: publicKey,
+            algorithms: ['RS256']
         });
     }
     prisma = new PrismaClient()
