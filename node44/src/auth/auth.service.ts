@@ -30,7 +30,7 @@ export class AuthService {
          }
 
          const token = this.jwtService.sign(
-            {data:{userId:checkUser}},
+            {data:{userId:checkUser.user_id}},
             {
                expiresIn:"30m",
                privateKey: this.keyService.getPrivateKey(),
